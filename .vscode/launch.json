@@ -5,13 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "go-fmu",
+            "name": "Dump",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceRoot}/cmd/go-fmu",
             "cwd": "${workspaceFolder}",
-
+            "args": ["dump", "-filename", "${workspaceRoot}/examples/Ball.fmu"]
+        },
+        {
+            "name": "Simulate",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceRoot}/cmd/go-fmu",
+            "cwd": "${workspaceFolder}",
+            "args": ["simulate", "-filename", "${workspaceRoot}/examples/Rectifier.fmu"]
         }
     ]
 }

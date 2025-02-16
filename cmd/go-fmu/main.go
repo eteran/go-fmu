@@ -9,7 +9,7 @@ import (
 
 func Run() error {
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'dump' or 'bar' subcommands")
+		fmt.Println("expected 'dump' or 'simulate' subcommands")
 		os.Exit(1)
 	}
 
@@ -45,7 +45,7 @@ func Run() error {
 		})
 
 	default:
-		fmt.Println("expected 'dump' or 'bar' subcommands")
+		fmt.Println("expected 'dump' or 'simulate' subcommands")
 		os.Exit(1)
 	}
 

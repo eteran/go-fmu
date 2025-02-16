@@ -213,12 +213,10 @@ func SimulateFmu(filename string, options SimulationOptions) error {
 			// options.FmiType = options.FmuInstance.FmiType
 			// TODO(eteran): support this?
 		} else {
-
-			if options.ModelDescription.ModelExchange != nil {
+			switch {
+			case options.ModelDescription.ModelExchange != nil:
 				options.FmiType = "ModelExchange"
-			}
-
-			if options.ModelDescription.CoSimulation != nil {
+			case options.ModelDescription.CoSimulation != nil:
 				options.FmiType = "CoSimulation"
 			}
 		}
@@ -303,7 +301,7 @@ func SimulateFmu(filename string, options SimulationOptions) error {
 		}
 
 		comp := fmu.Instantiate(
-			"Ball",
+			md.ModelName,
 			CoSimulationType,
 			md.Guid,
 			fmu.ResourceLocation(),
