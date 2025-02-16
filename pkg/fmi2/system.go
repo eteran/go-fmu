@@ -19,16 +19,17 @@ func CurrentMachine() Machine {
 	intSize := 32 << (^uint(0) >> 63) // 32 or 64
 
 	architecture := ""
-	suffix := ""
 
-	switch platform {
-	case "windows":
-		suffix = "dll"
-	case "darwin":
-		suffix = "dylib"
-	default:
-		suffix = "so"
-	}
+	suffix := func() string {
+		switch platform {
+		case "windows":
+			return "dll"
+		case "darwin":
+			return "dylib"
+		default:
+			return "so"
+		}
+	}()
 
 	switch machine {
 	case "aarch64", "arm64":
