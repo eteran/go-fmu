@@ -1,0 +1,22 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions: []
+dictionaries: []
+words:
+  - Asynchronuously
+  - dlclose
+  - dlfcn
+  - dlopen
+  - dlsym
+  - eteran
+  - FMUstate
+  - LDFLAGS
+  - RTLD
+  - stdarg
+  - stdint
+  - stdlib
+  - stretchr
+  - vfprintf
+  - vsnprintf
+ignoreWords: []
+import: []
