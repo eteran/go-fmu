@@ -34,8 +34,6 @@ func goStepFinished(env ComponentEnvironment, status Status) {
 	fmt.Println("Step Finished!")
 }
 
-// TODO(eteran): properly free all C.CStrings!
-
 type Fmu2 struct {
 	Directory    string
 	moduleHandle unsafe.Pointer
@@ -747,6 +745,14 @@ func (f *Fmu2) ResourceLocation() string {
 	return filepath.Join(f.Directory, "resources")
 }
 
+func resolveFunction(handle unsafe.Pointer, name string) unsafe.Pointer {
+	str := C.CString(name)
+	defer C.free(unsafe.Pointer(str))
+	ptr := C.dlsym(handle, str)
+	return ptr
+
+}
+
 func New(filename string) (*Fmu2, error) {
 
 	platforms := SupportedPlatforms(filename)
@@ -769,58 +775,60 @@ func New(filename string) (*Fmu2, error) {
 	}
 
 	modulePath := path.Join(directory, "binaries", library)
+	moduleString := C.CString(modulePath)
+	defer C.free(unsafe.Pointer(moduleString))
 
-	handle := C.dlopen(C.CString(modulePath), C.RTLD_LAZY)
+	handle := C.dlopen(moduleString, C.RTLD_LAZY)
 
 	// Common Functions
-	getTypesPlatformPtr := C.dlsym(handle, C.CString("fmi2GetTypesPlatform"))
-	getVersionPtr := C.dlsym(handle, C.CString("fmi2GetVersion"))
-	setDebugLoggingPtr := C.dlsym(handle, C.CString("fmi2SetDebugLogging"))
-	instantiatePtr := C.dlsym(handle, C.CString("fmi2Instantiate"))
-	freeInstancePtr := C.dlsym(handle, C.CString("fmi2FreeInstance"))
-	setupExperimentPtr := C.dlsym(handle, C.CString("fmi2SetupExperiment"))
-	enterInitializationModePtr := C.dlsym(handle, C.CString("fmi2EnterInitializationMode"))
-	exitInitializationModePtr := C.dlsym(handle, C.CString("fmi2ExitInitializationMode"))
-	terminatePtr := C.dlsym(handle, C.CString("fmi2Terminate"))
-	resetPtr := C.dlsym(handle, C.CString("fmi2Reset"))
-	getRealPtr := C.dlsym(handle, C.CString("fmi2GetReal"))
-	getIntegerPtr := C.dlsym(handle, C.CString("fmi2GetInteger"))
-	getBooleanPtr := C.dlsym(handle, C.CString("fmi2GetBoolean"))
-	getStringPtr := C.dlsym(handle, C.CString("fmi2GetString"))
-	setRealPtr := C.dlsym(handle, C.CString("fmi2SetReal"))
-	setIntegerPtr := C.dlsym(handle, C.CString("fmi2SetInteger"))
-	setBooleanPtr := C.dlsym(handle, C.CString("fmi2SetBoolean"))
-	setStringPtr := C.dlsym(handle, C.CString("fmi2SetString"))
-	getFMUstatePtr := C.dlsym(handle, C.CString("fmi2GetFMUstate"))
-	setFMUstatePtr := C.dlsym(handle, C.CString("fmi2SetFMUstate"))
-	freeFMUstatePtr := C.dlsym(handle, C.CString("fmi2FreeFMUstate"))
-	serializedFMUstateSizePtr := C.dlsym(handle, C.CString("fmi2SerializedFMUstateSize"))
-	serializeFMUstatePtr := C.dlsym(handle, C.CString("fmi2SerializeFMUstate"))
-	deSerializeFMUstatePtr := C.dlsym(handle, C.CString("fmi2DeSerializeFMUstate"))
-	getDirectionalDerivativePtr := C.dlsym(handle, C.CString("fmi2GetDirectionalDerivative"))
+	getTypesPlatformPtr := resolveFunction(handle, "fmi2GetTypesPlatform")
+	getVersionPtr := resolveFunction(handle, "fmi2GetVersion")
+	setDebugLoggingPtr := resolveFunction(handle, "fmi2SetDebugLogging")
+	instantiatePtr := resolveFunction(handle, "fmi2Instantiate")
+	freeInstancePtr := resolveFunction(handle, "fmi2FreeInstance")
+	setupExperimentPtr := resolveFunction(handle, "fmi2SetupExperiment")
+	enterInitializationModePtr := resolveFunction(handle, "fmi2EnterInitializationMode")
+	exitInitializationModePtr := resolveFunction(handle, "fmi2ExitInitializationMode")
+	terminatePtr := resolveFunction(handle, "fmi2Terminate")
+	resetPtr := resolveFunction(handle, "fmi2Reset")
+	getRealPtr := resolveFunction(handle, "fmi2GetReal")
+	getIntegerPtr := resolveFunction(handle, "fmi2GetInteger")
+	getBooleanPtr := resolveFunction(handle, "fmi2GetBoolean")
+	getStringPtr := resolveFunction(handle, "fmi2GetString")
+	setRealPtr := resolveFunction(handle, "fmi2SetReal")
+	setIntegerPtr := resolveFunction(handle, "fmi2SetInteger")
+	setBooleanPtr := resolveFunction(handle, "fmi2SetBoolean")
+	setStringPtr := resolveFunction(handle, "fmi2SetString")
+	getFMUstatePtr := resolveFunction(handle, "fmi2GetFMUstate")
+	setFMUstatePtr := resolveFunction(handle, "fmi2SetFMUstate")
+	freeFMUstatePtr := resolveFunction(handle, "fmi2FreeFMUstate")
+	serializedFMUstateSizePtr := resolveFunction(handle, "fmi2SerializedFMUstateSize")
+	serializeFMUstatePtr := resolveFunction(handle, "fmi2SerializeFMUstate")
+	deSerializeFMUstatePtr := resolveFunction(handle, "fmi2DeSerializeFMUstate")
+	getDirectionalDerivativePtr := resolveFunction(handle, "fmi2GetDirectionalDerivative")
 
 	// Functions for FMI2 for Model Exchange
-	enterEventModePtr := C.dlsym(handle, C.CString("fmi2EnterEventMode"))
-	newDiscreteStatesPtr := C.dlsym(handle, C.CString("fmi2NewDiscreteStates"))
-	enterContinuousTimeModePtr := C.dlsym(handle, C.CString("fmi2EnterContinuousTimeMode"))
-	completedIntegratorStepPtr := C.dlsym(handle, C.CString("fmi2CompletedIntegratorStep"))
-	setTimePtr := C.dlsym(handle, C.CString("fmi2SetTime"))
-	setContinuousStatesPtr := C.dlsym(handle, C.CString("fmi2SetContinuousStates"))
-	getDerivativesPtr := C.dlsym(handle, C.CString("fmi2GetDerivatives"))
-	getEventIndicatorsPtr := C.dlsym(handle, C.CString("fmi2GetEventIndicators"))
-	getContinuousStatesPtr := C.dlsym(handle, C.CString("fmi2GetContinuousStates"))
-	getNominalsOfContinuousStatesPtr := C.dlsym(handle, C.CString("fmi2GetNominalsOfContinuousStates"))
+	enterEventModePtr := resolveFunction(handle, "fmi2EnterEventMode")
+	newDiscreteStatesPtr := resolveFunction(handle, "fmi2NewDiscreteStates")
+	enterContinuousTimeModePtr := resolveFunction(handle, "fmi2EnterContinuousTimeMode")
+	completedIntegratorStepPtr := resolveFunction(handle, "fmi2CompletedIntegratorStep")
+	setTimePtr := resolveFunction(handle, "fmi2SetTime")
+	setContinuousStatesPtr := resolveFunction(handle, "fmi2SetContinuousStates")
+	getDerivativesPtr := resolveFunction(handle, "fmi2GetDerivatives")
+	getEventIndicatorsPtr := resolveFunction(handle, "fmi2GetEventIndicators")
+	getContinuousStatesPtr := resolveFunction(handle, "fmi2GetContinuousStates")
+	getNominalsOfContinuousStatesPtr := resolveFunction(handle, "fmi2GetNominalsOfContinuousStates")
 
 	// Functions for FMI2 for Co-Simulation
-	setRealInputDerivativesPtr := C.dlsym(handle, C.CString("fmi2SetRealInputDerivatives"))
-	getRealOutputDerivativesPtr := C.dlsym(handle, C.CString("fmi2GetRealOutputDerivatives"))
-	doStepPtr := C.dlsym(handle, C.CString("fmi2DoStep"))
-	cancelStepPtr := C.dlsym(handle, C.CString("fmi2CancelStep"))
-	getStatusPtr := C.dlsym(handle, C.CString("fmi2GetStatus"))
-	getRealStatusPtr := C.dlsym(handle, C.CString("fmi2GetRealStatus"))
-	getIntegerStatusPtr := C.dlsym(handle, C.CString("fmi2GetIntegerStatus"))
-	getBooleanStatusPtr := C.dlsym(handle, C.CString("fmi2GetBooleanStatus"))
-	getStringStatusPtr := C.dlsym(handle, C.CString("fmi2GetStringStatus"))
+	setRealInputDerivativesPtr := resolveFunction(handle, "fmi2SetRealInputDerivatives")
+	getRealOutputDerivativesPtr := resolveFunction(handle, "fmi2GetRealOutputDerivatives")
+	doStepPtr := resolveFunction(handle, "fmi2DoStep")
+	cancelStepPtr := resolveFunction(handle, "fmi2CancelStep")
+	getStatusPtr := resolveFunction(handle, "fmi2GetStatus")
+	getRealStatusPtr := resolveFunction(handle, "fmi2GetRealStatus")
+	getIntegerStatusPtr := resolveFunction(handle, "fmi2GetIntegerStatus")
+	getBooleanStatusPtr := resolveFunction(handle, "fmi2GetBooleanStatus")
+	getStringStatusPtr := resolveFunction(handle, "fmi2GetStringStatus")
 
 	fmu := &Fmu2{
 		Directory:    directory,
